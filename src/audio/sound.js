@@ -106,18 +106,29 @@ Tetris.Sound = (function () {
     } catch (e) {}
   }
 
-  // Play a specific audio clip segment by start time and duration
+  // Shared audio instance for sound effects to avoid unbuffered seek issues
+  const sfxAudio = new Audio('majaja.webm');
+  let sfxTimeout = null;
+
   function playClipSegment(startTime, duration, volume = 0.9) {
     if (muted) return;
     initCtx();
     try {
-      const sfx = new Audio('majaja.webm');
-      sfx.volume = volume;
-      sfx.currentTime = startTime;
-      sfx.play().catch(() => {});
+      if (sfxTimeout) clearTimeout(sfxTimeout);
+      sfxAudio.pause();
+      sfxAudio.volume = volume;
+      sfxAudio.currentTime = startTime;
+
+      const p = sfxAudio.play();
+      if (p !== undefined) {
+        p.then(() => {
+          sfxAudio.currentTime = startTime;
+        }).catch(() => {});
+      }
+
       if (duration && duration > 0) {
-        setTimeout(() => {
-          sfx.pause();
+        sfxTimeout = setTimeout(() => {
+          sfxAudio.pause();
         }, duration * 1000);
       }
     } catch (e) {}

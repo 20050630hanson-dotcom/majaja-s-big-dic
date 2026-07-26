@@ -324,16 +324,25 @@
       });
     }
 
+    let clipTimeout = null;
+
     function playClip(index) {
       const startInput = parseFloat(document.getElementById(`start-${index}`).value) || 0;
       const durInput = parseFloat(document.getElementById(`dur-${index}`).value) || 2;
       
-      const sfx = new Audio('majaja.webm');
-      sfx.currentTime = startInput;
-      sfx.play();
+      masterAudio.pause();
+      if (clipTimeout) clearTimeout(clipTimeout);
 
-      setTimeout(() => {
-        sfx.pause();
+      masterAudio.currentTime = startInput;
+      const playPromise = masterAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          masterAudio.currentTime = startInput;
+        }).catch(() => {});
+      }
+
+      clipTimeout = setTimeout(() => {
+        masterAudio.pause();
       }, durInput * 1000);
     }
 
