@@ -5,12 +5,16 @@ window.Tetris = window.Tetris || {};
 Tetris.Sound = (function () {
   let ctx = null;
   let muted = false;
-  let bgmStarted = false;
 
-  // MAJAJA Background Music (BGM)
-  const bgm = new Audio('majaja.webm');
-  bgm.loop = true;
-  bgm.volume = 0.4;
+  // Preset audio slices from majaja.webm (start time in sec, duration in sec)
+  const clips = {
+    majajaShort: { name: 'MAJAJA! 喊聲', start: 0.0, duration: 2.0, defaultAction: 'hardDrop' },
+    lineClear1: { name: '瑪雅加 語錄 1', start: 2.0, duration: 4.0, defaultAction: 'lineClear' },
+    lineClear2: { name: '瑪雅加 語錄 2', start: 6.0, duration: 5.0, defaultAction: 'tetris' },
+    combo: { name: '靈魂發聲 / 連擊', start: 11.0, duration: 4.0, defaultAction: 'combo' },
+    b2b: { name: '魔性笑聲 / 特殊獎勵', start: 15.0, duration: 6.0, defaultAction: 'b2b' },
+    gameOver: { name: '哀嚎 / 結束音效', start: 22.0, duration: 6.0, defaultAction: 'gameOver' }
+  };
 
   function initCtx() {
     if (!ctx && typeof window.AudioContext !== 'undefined') {
@@ -19,13 +23,6 @@ Tetris.Sound = (function () {
     }
     if (ctx && ctx.state === 'suspended') {
       ctx.resume();
-    }
-    if (!muted && !bgmStarted) {
-      bgm.play().then(() => {
-        bgmStarted = true;
-      }).catch(() => {
-        // Will start on next user gesture
-      });
     }
   }
 
@@ -91,7 +88,8 @@ Tetris.Sound = (function () {
     } catch (e) {}
   }
 
-  function playMajajaSfx(startTime = 0, duration = null, volume = 0.8) {
+  // Play a specific audio clip segment by start time and duration
+  function playClipSegment(startTime, duration, volume = 0.9) {
     if (muted) return;
     initCtx();
     try {
@@ -99,7 +97,7 @@ Tetris.Sound = (function () {
       sfx.volume = volume;
       sfx.currentTime = startTime;
       sfx.play().catch(() => {});
-      if (duration) {
+      if (duration && duration > 0) {
         setTimeout(() => {
           sfx.pause();
         }, duration * 1000);
@@ -109,13 +107,10 @@ Tetris.Sound = (function () {
 
   return {
     initCtx,
+    clips,
+    playClipSegment,
     toggleMute() {
       muted = !muted;
-      if (muted) {
-        bgm.pause();
-      } else {
-        bgm.play().then(() => { bgmStarted = true; }).catch(() => {});
-      }
       return muted;
     },
     isMuted() {
@@ -129,13 +124,13 @@ Tetris.Sound = (function () {
     },
     hold() {
       playTone(520, 'sine', 0.08, 0.05, 300);
-      playMajajaSfx(0, 0.5, 0.6);
+      playClipSegment(0.0, 0.8, 0.6);
     },
     softDrop() {
       playTone(180, 'sine', 0.03, 0.02, 100);
     },
     hardDrop() {
-      playMajajaSfx(0, 1.0, 0.9);
+      playClipSegment(clips.majajaShort.start, clips.majajaShort.duration, 0.9);
       playTone(120, 'square', 0.12, 0.08, 40);
       playNoise(0.08, 0.05);
     },
@@ -143,7 +138,11 @@ Tetris.Sound = (function () {
       playTone(220, 'triangle', 0.05, 0.04, 150);
     },
     lineClear(lines) {
-      playMajajaSfx(0, 2.0, 1.0);
+      if (lines >= 4) {
+        playClipSegment(clips.lineClear2.start, clips.lineClear2.duration, 1.0);
+      } else {
+        playClipSegment(clips.lineClear1.start, clips.lineClear1.duration, 0.9);
+      }
       const baseFreq = 523.25;
       const freqs = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2];
       const count = Math.min(lines, 4);
@@ -154,16 +153,16 @@ Tetris.Sound = (function () {
       }
     },
     combo(comboCount) {
-      playMajajaSfx(0.5, 0.8, 0.7);
+      playClipSegment(clips.combo.start, clips.combo.duration, 0.8);
       const pitchShift = Math.min(comboCount * 40, 600);
       playTone(400 + pitchShift, 'sine', 0.12, 0.07, 600 + pitchShift);
     },
     b2b() {
-      playMajajaSfx(1.0, 1.2, 0.9);
+      playClipSegment(clips.b2b.start, clips.b2b.duration, 0.9);
       playTone(784, 'triangle', 0.2, 0.08, 1046.5);
     },
     gameOver() {
-      playMajajaSfx(0, 3.0, 1.0);
+      playClipSegment(clips.gameOver.start, clips.gameOver.duration, 1.0);
       playTone(300, 'sawtooth', 0.4, 0.1, 60);
       setTimeout(() => playTone(150, 'sawtooth', 0.6, 0.12, 40), 200);
     }

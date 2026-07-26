@@ -18,6 +18,7 @@
       <span class="tag">NEON EDITION</span>
     </div>
     <div class="header-controls">
+      <button class="btn-icon" id="btn-sound-preview" title="音效片段試聽">🎧 音效預覽</button>
       <button class="btn-icon" id="btn-restart" title="重新開始 (R)">↻ Restart</button>
       <button class="btn-icon" id="btn-mute" title="靜音 (M)">🔊 Mute</button>
     </div>
@@ -80,6 +81,18 @@
           <p id="modal-subtitle">按 [R] 鍵重新開始游玩</p>
         </div>
       </div>
+
+      <!-- MAJAJA Sound Preview Modal Overlay -->
+      <div class="modal-overlay hidden" id="sound-preview-modal">
+        <div class="modal-content preview-modal-content">
+          <div class="modal-header">
+            <h2>🎧 MAJAJA 音效片段分類與預覽板</h2>
+            <button class="btn-icon" id="btn-close-preview">✕ 關閉</button>
+          </div>
+          <p class="preview-subtitle">點擊 ▶ 試聽各區間片段音效：</p>
+          <div class="clip-list" id="clip-list"></div>
+        </div>
+      </div>
     </section>
 
     <!-- Right Side Panel: NEXT 5 Queue -->
@@ -113,6 +126,7 @@
   <script src="src/game/scoring.js"></script>
   <script src="src/game/engine.js"></script>
   <script src="src/ui/renderer.js"></script>
+  <script src="src/ui/soundPreview.js"></script>
   <script src="src/input/keyboard.js"></script>
   <script src="src/app.js"></script>
 </body>

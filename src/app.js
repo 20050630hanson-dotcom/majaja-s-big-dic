@@ -121,5 +121,8 @@ if (muteBtn) {
 }
 
 Tetris.bindKeyboard(handleAction, state);
+if (Tetris.initSoundPreview) {
+  Tetris.initSoundPreview();
+}
 render(state, null);
 requestAnimationFrame(gameLoop);
