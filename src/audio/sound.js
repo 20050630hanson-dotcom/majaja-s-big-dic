@@ -8,13 +8,31 @@ Tetris.Sound = (function () {
 
   // Preset audio slices from majaja.webm (start time in sec, duration in sec)
   const clips = {
-    majajaShort: { name: 'MAJAJA! 喊聲', start: 0.0, duration: 2.0, defaultAction: 'hardDrop' },
-    lineClear1: { name: '瑪雅加 語錄 1', start: 2.0, duration: 4.0, defaultAction: 'lineClear' },
-    lineClear2: { name: '瑪雅加 語錄 2', start: 6.0, duration: 5.0, defaultAction: 'tetris' },
+    hardDrop: { name: 'MAJAJA! 喊聲', start: 0.0, duration: 2.0, defaultAction: 'hardDrop' },
+    lineClear: { name: '瑪雅加 語錄 1', start: 2.0, duration: 4.0, defaultAction: 'lineClear' },
+    tetris: { name: '瑪雅加 語錄 2', start: 6.0, duration: 5.0, defaultAction: 'tetris' },
     combo: { name: '靈魂發聲 / 連擊', start: 11.0, duration: 4.0, defaultAction: 'combo' },
     b2b: { name: '魔性笑聲 / 特殊獎勵', start: 15.0, duration: 6.0, defaultAction: 'b2b' },
     gameOver: { name: '哀嚎 / 結束音效', start: 22.0, duration: 6.0, defaultAction: 'gameOver' }
   };
+
+  // Sync dynamically from localStorage if modified on preview page
+  if (typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem('majaja_clips');
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr)) {
+          arr.forEach(c => {
+            if (clips[c.id]) {
+              clips[c.id].start = c.start;
+              clips[c.id].duration = c.duration;
+            }
+          });
+        }
+      } catch (e) {}
+    }
+  }
 
   function initCtx() {
     if (!ctx && typeof window.AudioContext !== 'undefined') {
@@ -130,7 +148,7 @@ Tetris.Sound = (function () {
       playTone(180, 'sine', 0.03, 0.02, 100);
     },
     hardDrop() {
-      playClipSegment(clips.majajaShort.start, clips.majajaShort.duration, 0.9);
+      playClipSegment(clips.hardDrop.start, clips.hardDrop.duration, 0.9);
       playTone(120, 'square', 0.12, 0.08, 40);
       playNoise(0.08, 0.05);
     },
@@ -139,9 +157,9 @@ Tetris.Sound = (function () {
     },
     lineClear(lines) {
       if (lines >= 4) {
-        playClipSegment(clips.lineClear2.start, clips.lineClear2.duration, 1.0);
+        playClipSegment(clips.tetris.start, clips.tetris.duration, 1.0);
       } else {
-        playClipSegment(clips.lineClear1.start, clips.lineClear1.duration, 0.9);
+        playClipSegment(clips.lineClear.start, clips.lineClear.duration, 0.9);
       }
       const baseFreq = 523.25;
       const freqs = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2];

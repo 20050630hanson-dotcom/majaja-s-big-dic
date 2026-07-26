@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAJAJA 音效片段剪輯與試聽中心</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --panel: rgba(22, 27, 34, 0.85);
+      --border: rgba(255, 255, 255, 0.12);
+      --cyan: #06b6d4;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --green: #10b981;
+      --text: #f0f6fc;
+      --sub: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 10%, #1c2333 0%, var(--bg) 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--sub);
+      font-size: 0.95rem;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Player controls */
+    .master-player {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* Clip Editor Grid */
+    .clip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .clip-item {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr 110px 110px;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .clip-item:hover {
+      background: rgba(6, 182, 212, 0.06);
+      border-color: var(--cyan);
+    }
+
+    .clip-name-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .clip-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .clip-tag {
+      font-size: 0.78rem;
+      color: var(--pink);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-group label {
+      font-size: 0.75rem;
+      color: var(--sub);
+    }
+
+    .input-group input {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-save-all {
+      background: linear-gradient(135deg, #059669, #10b981);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+      padding: 10px 20px;
+      font-size: 0.95rem;
+    }
+
+    .btn-save-all:hover {
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--cyan);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .nav-links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎧 MAJAJA 音效片段檢視與微調中心</h1>
+    <p class="subtitle">可以直接試聽與修改秒數，點擊「💾 儲存並套用到遊戲」即可寫入並套用！</p>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- Master Audio Player -->
+    <div class="card">
+      <div class="card-title">🎵 完整原音檔播放器 (majaja.webm)</div>
+      <div class="master-player">
+        <audio id="master-audio" controls src="majaja.webm"></audio>
+      </div>
+    </div>
+
+    <!-- Clip Segment List -->
+    <div class="card">
+      <div class="card-title-bar">
+        <div class="card-title">✂️ 遊戲音效片段試聽與微調面板</div>
+        <button class="btn btn-save-all" onclick="saveAllClips()">💾 儲存並套用到遊戲</button>
+      </div>
+      <div class="clip-list" id="clip-list">
+        <!-- JS rendered clip controls -->
+      </div>
+    </div>
+
+    <div class="nav-links card" style="flex-direction: row;">
+      <span>🎮 調整滿意後點擊上方儲存即可隨時開玩！</span>
+      <a href="index.html">👉 開啟 MAJAJA 俄羅斯方塊遊戲</a>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">✅ 已成功儲存並同步至遊戲！</div>
+
+  <script>
+    let clips = [
+      { id: 'hardDrop', name: '1. MAJAJA! 喊聲', tag: '綁定動作: 硬降 (Hard Drop)', start: 0.0, duration: 2.0 },
+      { id: 'lineClear', name: '2. 瑪雅加 語錄 1', tag: '綁定動作: 普通消行 (Single/Double/Triple)', start: 2.0, duration: 4.0 },
+      { id: 'tetris', name: '3. 瑪雅加 語錄 2', tag: '綁定動作: 四連消 (Tetris)', start: 6.0, duration: 5.0 },
+      { id: 'combo', name: '4. 靈魂發聲', tag: '綁定動作: 連擊 (Combo)', start: 11.0, duration: 4.0 },
+      { id: 'b2b', name: '5. 魔性笑聲 / 特殊獎勵', tag: '綁定動作: Back-to-Back', start: 15.0, duration: 6.0 },
+      { id: 'gameOver', name: '6. 哀嚎 / 結束音效', tag: '綁定動作: 遊戲結束 (Game Over)', start: 22.0, duration: 6.0 }
+    ];
+
+    // Load saved clips from localStorage if present
+    const saved = localStorage.getItem('majaja_clips');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          clips = parsed;
+        }
+      } catch (e) {}
+    }
+
+    const clipList = document.getElementById('clip-list');
+    const masterAudio = document.getElementById('master-audio');
+    const toast = document.getElementById('toast');
+
+    function renderClips() {
+      clipList.innerHTML = '';
+      clips.forEach((clip, index) => {
+        const item = document.createElement('div');
+        item.className = 'clip-item';
+        item.innerHTML = `
+          <div class="clip-name-group">
+            <span class="clip-name">${clip.name}</span>
+            <span class="clip-tag">${clip.tag}</span>
+          </div>
+          <div class="input-group">
+            <label>起始秒數 (s)</label>
+            <input type="number" step="0.1" value="${clip.start}" id="start-${index}">
+          </div>
+          <div class="input-group">
+            <label>播放長度 (s)</label>
+            <input type="number" step="0.1" value="${clip.duration}" id="dur-${index}">
+          </div>
+          <button class="btn" onclick="playClip(${index})">▶ 試聽片段</button>
+          <button class="btn btn-secondary" onclick="seekTo(${index})">📍 定位播放</button>
+        `;
+        clipList.appendChild(item);
+      });
+    }
+
+    function playClip(index) {
+      const startInput = parseFloat(document.getElementById(`start-${index}`).value) || 0;
+      const durInput = parseFloat(document.getElementById(`dur-${index}`).value) || 2;
+      
+      const sfx = new Audio('majaja.webm');
+      sfx.currentTime = startInput;
+      sfx.play();
+
+      setTimeout(() => {
+        sfx.pause();
+      }, durInput * 1000);
+    }
+
+    function seekTo(index) {
+      const startInput = parseFloat(document.getElementById(`start-${index}`).value) || 0;
+      masterAudio.currentTime = startInput;
+      masterAudio.play();
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg || '✅ 已成功儲存！';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function saveAllClips() {
+      // Update clips object array from inputs
+      clips.forEach((clip, index) => {
+        clip.start = parseFloat(document.getElementById(`start-${index}`).value) || 0;
+        clip.duration = parseFloat(document.getElementById(`dur-${index}`).value) || 1;
+      });
+
+      // 1. Save locally
+      localStorage.setItem('majaja_clips', JSON.stringify(clips));
+
+      // 2. Post to server to rewrite sound.js
+      try {
+        const res = await fetch('/api/save-clips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(clips)
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast('✅ 成功寫入檔案！已套用到遊戲中。');
+        } else {
+          showToast('✅ 已儲存至本地快取！');
+        }
+      } catch (e) {
+        showToast('✅ 已儲存至本地瀏覽器！');
+      }
+    }
+
+    renderClips();
+  </script>
+</body>
+</html>
