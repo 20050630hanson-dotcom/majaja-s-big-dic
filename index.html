@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TETR.IO 風格 俄羅斯方塊</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="brand">
+      <h1>TETR.IO</h1>
+      <span class="tag">NEON EDITION</span>
+    </div>
+    <div class="header-controls">
+      <button class="btn-icon" id="btn-restart" title="重新開始 (R)">↻ Restart</button>
+      <button class="btn-icon" id="btn-mute" title="靜音 (M)">🔊 Mute</button>
+    </div>
+  </header>
+
+  <!-- 3-Panel Main Shell -->
+  <main class="tetris-shell">
+    
+    <!-- Left Side Panel: HOLD & Stats -->
+    <aside class="side-panel left-panel">
+      <div class="card hold-card">
+        <div class="card-title">HOLD</div>
+        <canvas id="hold-canvas" width="120" height="100"></canvas>
+      </div>
+
+      <div class="card stats-card">
+        <div class="card-title">STATS</div>
+        <div class="stats-group">
+          <div class="stat-item">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="score-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LINES</span>
+            <span class="stat-value" id="lines-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LEVEL</span>
+            <span class="stat-value" id="level-val">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">PPS</span>
+            <span class="stat-value" id="pps-val">0.00</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">TIME</span>
+            <span class="stat-value" id="time-val">00:00</span>
+          </div>
+        </div>
+
+        <!-- Combo & B2B Indicators -->
+        <div class="badge-container">
+          <div class="badge badge-combo hidden" id="combo-badge">1 COMBO</div>
+          <div class="badge badge-b2b hidden" id="b2b-badge">BACK TO BACK</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Panel: Main Matrix -->
+    <section class="matrix-container">
+      <canvas id="main-canvas" width="320" height="640" aria-label="Tetris Board"></canvas>
+
+      <!-- Floating Reward Notification Popup -->
+      <div class="bonus-popup" id="bonus-popup"></div>
+
+      <!-- Game Over / Pause Modal Overlay -->
+      <div class="modal-overlay hidden" id="game-modal">
+        <div class="modal-content">
+          <h2 id="modal-title">GAME OVER</h2>
+          <p id="modal-subtitle">按 [R] 鍵重新開始游玩</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Side Panel: NEXT 5 Queue -->
+    <aside class="side-panel right-panel">
+      <div class="card next-card">
+        <div class="card-title">NEXT</div>
+        <canvas id="next-canvas" width="120" height="340"></canvas>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Controls Guide Footer -->
+  <footer class="controls-guide">
+    <div class="key-tag"><kbd>←</kbd><kbd>→</kbd> 移動</div>
+    <div class="key-tag"><kbd>↓</kbd> 軟降</div>
+    <div class="key-tag"><kbd>Space</kbd> 硬降</div>
+    <div class="key-tag"><kbd>↑</kbd> / <kbd>X</kbd> 順轉</div>
+    <div class="key-tag"><kbd>Z</kbd> 逆轉</div>
+    <div class="key-tag"><kbd>Q</kbd> / <kbd>W</kbd> 180°</div>
+    <div class="key-tag"><kbd>C</kbd> / <kbd>Shift</kbd> HOLD</div>
+    <div class="key-tag"><kbd>R</kbd> 重來</div>
+    <div class="key-tag"><kbd>P</kbd> 暫停</div>
+  </footer>
+
+  <!-- Core JavaScript Modules -->
+  <script src="src/core/config.js"></script>
+  <script src="src/audio/sound.js"></script>
+  <script src="src/game/pieces.js"></script>
+  <script src="src/core/state.js"></script>
+  <script src="src/game/scoring.js"></script>
+  <script src="src/game/engine.js"></script>
+  <script src="src/ui/renderer.js"></script>
+  <script src="src/input/keyboard.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
