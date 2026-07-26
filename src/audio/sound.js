@@ -5,6 +5,7 @@ window.Tetris = window.Tetris || {};
 Tetris.Sound = (function () {
   let ctx = null;
   let muted = false;
+  let audioBuffer = null;
 
   // Preset audio slices from majaja.webm (start time in sec, duration in sec)
   const clips = {
@@ -41,6 +42,19 @@ Tetris.Sound = (function () {
     }
     if (ctx && ctx.state === 'suspended') {
       ctx.resume();
+    }
+    loadAudioBuffer();
+  }
+
+  // Load and decode the file into an AudioBuffer using fetch & Web Audio API
+  async function loadAudioBuffer() {
+    if (audioBuffer || !ctx) return;
+    try {
+      const response = await fetch('majaja.webm');
+      const arrayBuffer = await response.arrayBuffer();
+      audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+      console.error('Failed to load/decode majaja.webm via Web Audio API:', e);
     }
   }
 
@@ -106,31 +120,36 @@ Tetris.Sound = (function () {
     } catch (e) {}
   }
 
-  // Shared audio instance for sound effects to avoid unbuffered seek issues
-  const sfxAudio = new Audio('majaja.webm');
-  let sfxTimeout = null;
-
+  // Play a specific audio clip segment using Web Audio API buffer (instant, 0ms lag)
   function playClipSegment(startTime, duration, volume = 0.9) {
     if (muted) return;
     initCtx();
+    
+    // Fallback if not loaded yet
+    if (!audioBuffer) {
+      try {
+        const sfx = new Audio('majaja.webm');
+        sfx.volume = volume;
+        sfx.currentTime = startTime;
+        sfx.play().catch(() => {});
+        if (duration && duration > 0) {
+          setTimeout(() => { sfx.pause(); }, duration * 1000);
+        }
+      } catch (e) {}
+      return;
+    }
+
     try {
-      if (sfxTimeout) clearTimeout(sfxTimeout);
-      sfxAudio.pause();
-      sfxAudio.volume = volume;
-      sfxAudio.currentTime = startTime;
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
 
-      const p = sfxAudio.play();
-      if (p !== undefined) {
-        p.then(() => {
-          sfxAudio.currentTime = startTime;
-        }).catch(() => {});
-      }
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
 
-      if (duration && duration > 0) {
-        sfxTimeout = setTimeout(() => {
-          sfxAudio.pause();
-        }, duration * 1000);
-      }
+      source.connect(gain);
+      gain.connect(ctx.destination);
+
+      source.start(0, startTime, duration);
     } catch (e) {}
   }
 

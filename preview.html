@@ -325,25 +325,56 @@
     }
 
     let clipTimeout = null;
+    let audioBuffer = null;
+    let audioCtx = null;
+    let activeSource = null;
 
-    function playClip(index) {
+    async function loadAudioBuffer() {
+      if (audioBuffer) return;
+      try {
+        const response = await fetch('majaja.webm');
+        const arrayBuffer = await response.arrayBuffer();
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      } catch (e) {
+        console.error('Web Audio API loading failed, using HTML5 Audio fallback', e);
+      }
+    }
+
+    async function playClip(index) {
       const startInput = parseFloat(document.getElementById(`start-${index}`).value) || 0;
       const durInput = parseFloat(document.getElementById(`dur-${index}`).value) || 2;
       
-      masterAudio.pause();
-      if (clipTimeout) clearTimeout(clipTimeout);
+      // Attempt to load and decode the audio file in memory
+      await loadAudioBuffer();
 
-      masterAudio.currentTime = startInput;
-      const playPromise = masterAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          masterAudio.currentTime = startInput;
-        }).catch(() => {});
-      }
-
-      clipTimeout = setTimeout(() => {
+      if (audioBuffer && audioCtx) {
+        if (activeSource) {
+          try { activeSource.stop(); } catch(e) {}
+        }
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioCtx.destination);
+        source.start(0, startInput, durInput);
+        activeSource = source;
+      } else {
+        // HTML5 Audio Fallback
         masterAudio.pause();
-      }, durInput * 1000);
+        if (clipTimeout) clearTimeout(clipTimeout);
+        masterAudio.currentTime = startInput;
+        const playPromise = masterAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            masterAudio.currentTime = startInput;
+          }).catch(() => {});
+        }
+        clipTimeout = setTimeout(() => {
+          masterAudio.pause();
+        }, durInput * 1000);
+      }
     }
 
     function seekTo(index) {
