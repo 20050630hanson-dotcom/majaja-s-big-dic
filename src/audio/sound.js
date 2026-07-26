@@ -92,6 +92,11 @@ Tetris.Sound = (function () {
       playTone(180, 'sine', 0.03, 0.02, 100);
     },
     hardDrop() {
+      if (!muted) {
+        const a = new Audio('majaja.webm');
+        a.volume = 0.6;
+        a.play().catch(()=>{});
+      }
       playTone(120, 'square', 0.12, 0.08, 40);
       playNoise(0.08, 0.05);
     },
@@ -99,6 +104,11 @@ Tetris.Sound = (function () {
       playTone(220, 'triangle', 0.05, 0.04, 150);
     },
     lineClear(lines) {
+      if (!muted) {
+        const a = new Audio('majaja.webm');
+        a.volume = 1.0;
+        a.play().catch(()=>{});
+      }
       const baseFreq = 523.25; // C5
       const freqs = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2];
       const count = Math.min(lines, 4);
